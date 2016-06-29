@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir> <env-dir>
 
-set -ex # bail if any command fails
+set -e # bail if any command fails
 
 BUILD_DIR="$1"
 CACHE_DIR="$2"
@@ -29,7 +29,7 @@ fi
 
 if [ ! -f "$CACHE_FILE" ]; then
   echo "-----> Database does not exist in cache, downloading."
-  curl "$GEOIP_URL" | gunzip > "$CACHE_FILE"
+  curl –silent "$GEOIP_URL" | gunzip > "$CACHE_FILE"
   touch "$LAST_TIME"
 else
   echo "-----> Database already exists in cache."
