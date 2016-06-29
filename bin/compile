@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+set -ex # bail if any command fails
+
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+ENV_DIR="$3"
+
+LAST_TIME="$CACHE_DIR/LAST_TIME"
+CACHE_FILE="$CACHE_DIR/GeoLite2-City.mmdb"
+BUILD_FILE="$BUILD_DIR/GeoLite2-City.mmdb"
+GEOIP_URL="http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz"
+
+# check the timestamp if there is a cached file
+if [ -f "$CACHE_FILE" ]; then
+  if [ -f "$LAST_TIME" ]; then
+    touch -d '-1 week' limit
+
+    if [ limit -nt "$LAST_TIME" ]; then
+      echo "-----> Database is older than a week, clearing cache."
+      rm "$CACHE_FILE"
+    fi
+  else
+    echo "-----> Unable to determine last download time, clearing cache."
+    rm "$CACHE_FILE"
+  fi
+fi
+
+if [ ! -f "$CACHE_FILE" ]; then
+  echo "-----> Database does not exist in cache, downloading."
+  curl "$GEOIP_URL" | gunzip > "$CACHE_FILE"
+  touch "$LAST_TIME"
+else
+  echo "-----> Database already exists in cache."
+fi
+
+
+echo "-----> Copying $CACHE_FILE to $BUILD_FILE."
+cp "$CACHE_FILE" "$BUILD_FILE"
